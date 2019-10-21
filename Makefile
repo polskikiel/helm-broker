@@ -1,7 +1,12 @@
+ROOT_PATH := $(shell pwd)
+GIT_TAG=$(PULL_BASE_REF)
+GIT_REPO=$(REPO_OWNER)/$(REPO_NAME)
+export GITHUB_TOKEN=$(BOT_GITHUB_TOKEN)
+
 APP_NAME = helm-broker
 TOOLS_NAME = helm-broker-tools
-CONTROLLER_NAME=helm-controller
-TESTS_NAME=helm-broker-tests
+TESTS_NAME = helm-broker-tests
+CONTROLLER_NAME = helm-controller
 
 REPO = $(DOCKER_PUSH_REPOSITORY)$(DOCKER_PUSH_DIRECTORY)/
 TAG = $(DOCKER_TAG)
@@ -39,10 +44,28 @@ generates: crd-manifests client
 crd-manifests:
 	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --domain kyma-project.io
 
-# Generate code
 .PHONY: client
 client:
 	./hack/update-codegen.sh
+
+.PHONY: generate-changelog
+generate-changelog:
+	@docker run -it --rm -v $(ROOT_PATH):/usr/local/src/your-app ferrarimarco/github-changelog-generator -u $(REPO_OWNER) -p $(REPO_NAME) -t $(GITHUB_TOKEN) --since-tag $(shell ./scripts/from_tag.sh) ||:
+
+.PHONY: release
+release: generate-changelog release-branch
+	./scripts/push_release.sh $(GIT_TAG) $(GIT_REPO)
+
+.PHONY: latest-release
+latest-release: generate-latest-changelog
+	./scripts/create_latest_tag_step.sh $(GIT_REPO)
+	./scripts/remove_latest_release.sh $(GIT_REPO)
+	./scripts/push_release.sh $(GIT_TAG) $(GIT_REPO)
+
+.PHONY: release-branch
+release-branch:
+# release branch named `release-x.y` will be created if the GIT_TAG matches the `x.y.0` version pattern.
+	./scripts/create_release_branch_step.sh $(GIT_TAG) $(GIT_REPO)
 
 .PHONY: build-image
 build-image: pull-licenses
@@ -75,10 +98,10 @@ push-image:
 ci-pr: build integration-test build-image push-image
 
 .PHONY: ci-master
-ci-master: build integration-test build-image push-image
+ci-master: build integration-test build-image push-image latest-release
 
 .PHONY: ci-release
-ci-release: build integration-test build-image push-image
+ci-release: charts-test release
 
 .PHONY: clean
 clean:
