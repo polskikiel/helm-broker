@@ -12,35 +12,40 @@ Every tag pushed to the repository triggers a new release.
 
 Follow these steps to create a new `helm-broker` release 0.6.0:
 
-1. Change images tag in the `charts/helm-broker/values.yaml` to 0.6.0:
+1. Checkout on master and pull the latest changes:
+
+    ```
+    git checkout master
+    git pull
+    ```
+2. Prepare the release:
 
     ```
     make VERSION=0.6.0 cut-release
     ```
 Above command do the following things:
-  - stash your changes
-  - checkout on master
-  - pull the latest master
-  - change the images tag in the `charts/helm-broker/values.yaml` to 0.6.0
+  - changes the images tag in the `charts/helm-broker/values.yaml` to 0.6.0
   - creates a commit with the changes
 
-2. Push the release:
+3. Push the release:
 
     ```
     git push {remote} 0.6.0
     ```
+
+It triggers the Prow CI release job for that branch.
 
     >**NOTE:** If you want to push the tag to the upstream, run the following command:
     >```
     >git push upstream 0.6.0
     >```
 
-3. After Prow CI job finish, go to the **releases** tab where the new release appears. The new branch is available in the **branches** tab.
+4. After Prow CI job finish, go to the **releases** tab where the new release appears. The new branch is available in the **branches** tab.
 
 
 ### Create a release from the release branch
 
-Follow these steps to create a new addon release 0.6.1:
+Follow these steps to create a new `helm-broker` release 0.6.1:
 
 1. Checkout the release branch with the latest changes. For example:
 
@@ -52,16 +57,20 @@ Follow these steps to create a new addon release 0.6.1:
 
 2. Commit your changes to the release branch `0.6.0`.
 
-3. Create a tag with the proper release version. For example:
+3. Prepare the release:
 
     ```
-    git tag 0.6.1
-    ```   
+    make VERSION=0.6.1 patch-release
+    ```
+    Above command do the following things:
+      - changes the images tag in the `charts/helm-broker/values.yaml` to 0.6.1
+      - creates a commit with the changes
+      - creates a `0.6.1` tag 
 
-4. Push the tag:
+4. Push your changes with the tag:
 
     ```
-    git push {remote} 0.6.1 --tags
+    git push {remote} --tags
     ```
 
 5. After Prow CI job finish, go to the **releases** tab where the new `0.6.1` release appears.

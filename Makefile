@@ -86,10 +86,7 @@ endif
 	@docker run --rm -v $(ROOT_PATH):/workdir mikefarah/yq yq w -i charts/helm-broker/values.yaml tests.tag $(TAG) ||:
 
 .PHONY: cut-release
-cut-release:
-	git checkout master
-	git pull
-	$(MAKE) tag-release-images
+cut-release: tag-release-images
 	git checkout -b $(VERSION)
 	git add charts/helm-broker/values.yaml
 	git commit -m "Bump release images"
@@ -99,6 +96,7 @@ patch-release: tag-release-images
 	git checkout -b $(VERSION)
 	git add charts/helm-broker/values.yaml
 	git commit -m "Bump release images"
+	git tag $(VERSION)
 
 .PHONY: build-image
 build-image: pull-licenses
