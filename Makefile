@@ -70,6 +70,7 @@ latest-release: tar-chart generate-changelog
 	./scripts/latest_tag_create_step.sh $(GIT_REPO)
 	./scripts/latest_tag_remove_step.sh $(GIT_REPO)
 	./scripts/push_release.sh $(GIT_TAG) $(GIT_REPO)
+	./scripts/push_latest_changelog.sh $(GIT_TAG) $(GIT_REPO)
 
 .PHONY: tar-chart
 tar-chart:
