@@ -7,6 +7,8 @@ FROM scratch
 COPY ./hb_chart_test /usr/local/bin/hb_chart_test
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
+ADD tmp /tmp
+
 LABEL source=git@github.com:kyma-project/helm-broker.git
 
 ENTRYPOINT ["hb_chart_test"]

@@ -113,9 +113,14 @@ build-image: pull-licenses
 	cp hb_chart_test deploy/tests/hb_chart_test
 
 	docker build -t $(APP_NAME) deploy/broker
-	docker build -t $(CONTROLLER_NAME) deploy/controller
 	docker build -t $(TOOLS_NAME) deploy/tools
+
+	# scratch images needs the /tmp dir
+	mkdir -p deploy/controller/tmp
 	docker build -t $(TESTS_NAME) deploy/tests
+
+	mkdir -p deploy/controller/tmp
+	docker build -t $(CONTROLLER_NAME) deploy/controller
 
 .PHONY: push-image
 push-image:
@@ -132,7 +137,7 @@ push-image:
 	docker push $(REPO)$(TESTS_NAME):$(TAG)
 
 .PHONY: ci-pr
-ci-pr: build integration-test build-image push-image
+ci-pr: build build-image push-image
 
 .PHONY: ci-master
 ci-master: build integration-test build-image push-image latest-release push-image
