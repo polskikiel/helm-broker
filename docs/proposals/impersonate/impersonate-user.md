@@ -110,6 +110,22 @@ Follow these steps to validate the proposed workflow:
     I0615 19:07:13.243344       1 controller.go:404] Error syncing ServiceInstance impersonate-helm-broker/redis-user2 (retry: 0/15): Error provisioning ServiceInstance of ClusterServiceClass (K8S: "123-123-123-123-123-123" ExternalName: "redis") at ClusterServiceBroker "impersonate-helm-broker": Status: 500; ErrorMessage: <nil>; Description: namespaces is forbidden: User "user2@kyma.cx" cannot create resource "namespaces" in API group "" at the cluster scope; ResponseError: <nil>
    ```
 
+### Issues
+
+The implementation has a lot of obstacles like:
+
+1. Need a PR to change implementation in SC to push forward user's identity
+
+2. Need a PR to console backend service to support user's identity in client's calls
+
+3. The deletion action will be executed using the identity of the last user which executed CREATE or UPDATE action on the Service Instance.
+The possible solutions for this issue are as follows:
+
+- Helm broker with admin permissions for resources removal (requires an additional small PR for Helm Broker)
+- Implementing the changes in the Service Catalog to move user info from `.spec` to `.status` (more clear solution but requires a higher amount of work)
+
 ### Consequences for an accepted proposal
 
 The PoC shows that the [OriginatingIdentity](https://github.com/kubernetes-sigs/service-catalog/blob/b6afbc9fec94e7b0d350f22e736d0484d181b351/pkg/features/features.go#L31-L37) feature is not working as expected. When ServiceInstance is created by the user then the given ServiceInstance is processed by the Service Catalog controller. The controller adds fields under the `spec` entry causing that it is the last one that modified the ServiceInstance and the UserInfo is always populated with the Service Catalog controller service account. This breaks the flow because the Helm Broker does not know the actual author. Before implementing the proposed solution in Helm Broker the pull request which fixes that issue needs to be merged and a new Service Catalog needs to be used in Kyma.
+
+The accepted proposal must address above issues.
