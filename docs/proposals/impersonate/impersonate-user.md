@@ -4,6 +4,38 @@ Created on 2020-06-15 by Mateusz Szostok ([@mszostok](https://github.com/mszosto
 
 This document describes how the Helm Broker can install Helm Charts using same privileges as the user who created a ServiceInstance.
 
+## Decision
+
+The decision was made on meeting 2020-07-14. It assumes resolving the [issues](#issues) in the following steps:
+
+1. Merge a [PR](https://github.com/kubernetes-sigs/service-catalog/pull/2822) to SC
+2. Implement support for user's identity in the console backend service
+3. Use helm broker service account with "God mode" for resources deletion
+
+After implementing the above changes the scenario of working with Helm broker instaces will look as follows:
+
+<div tabs>
+
+  <details>
+  <summary>
+  Create or update
+  </summary>
+  <p align="center">
+   <img alt="arch" src="./impersonate-create.svg"/>
+  </p>
+  </details>
+  
+  <details>
+  <summary>
+  Delete
+  </summary>
+  <p align="center">
+   <img alt="arch" src="./impersonate-remove.svg"/>
+  </p>
+  </details>
+    
+</div>
+
 ## Motivation
 
 Helm was using Tiller to maintain the state of a Helm release. To do so, Tiller required a "God mode" which means that it needs to have admin role-based access controls (RBAC). For the security reason, [Tiller was removed in Helm 3](https://helm.sh/docs/faq/#removal-of-tiller) and now releases are maintain based on the user RBAC.
