@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"time"
 
 	"github.com/gorilla/mux"
